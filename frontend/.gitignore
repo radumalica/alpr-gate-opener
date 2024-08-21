@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+runs/
+yolo8x.pt
+best.pt
+license_plate_detector.pt

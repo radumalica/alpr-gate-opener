@@ -1,0 +1,63 @@
+services:
+#  frontend:
+#    build: ./frontend
+#    ports:
+#      - "3001:5000"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.frontend.rule=Host(`frontend.test.local`)"
+#      - "traefik.http.routers.frontend.entrypoints=websecure"
+#      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+#    depends_on:
+#      - backend
+
+#  backend:
+#    build: ./backend
+#    ports:
+#      - "3002:3002"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.backend.rule=Host(`backend.test.local`)"
+#      - "traefik.http.routers.backend.entrypoints=websecure"
+#      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+#   depends_on:
+#      - mongo
+
+#  admin:
+#    build: ./admin
+#    ports:
+#      - "3003:3003"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.admin.rule=Host(`admin.test.local`)"
+#      - "traefik.http.routers.admin.entrypoints=websecure"
+#      - "traefik.http.routers.admin.tls.certresolver=myresolver"
+#    depends_on:
+#      - mongo
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+#  traefik:
+#    image: traefik:v2.11
+#    command:
+#      - "--api.insecure=true"
+#      - "--providers.docker=true"
+#      - "--entrypoints.websecure.address=:443"
+#      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+#      - "--certificatesresolvers.myresolver.acme.email=tox2k4@gmail.com"
+#      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+#    ports:
+#      - "443:443"
+#      - "8080:8080"
+#    volumes:
+#      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+#      - "letsencrypt:/letsencrypt"
+
+volumes:
+  mongo_data:
+  letsencrypt:
