@@ -1,93 +1,64 @@
 # alpr-gate-opener
 
+This is working in progress of a ALPR gate opener which uses (for now) a simple interface to upload a photo with the front of a car with visible license plate and recognize it.
+
+This work is inspired from https://github.com/ahasera/alpr-rtsp/
+
+The project is split into 4 parts:
+
+1. Frontend - python3.10 based script using OpenCV, paddleOCR and UltraLytics YOLO library to do license plate recognition. There are also 2 models configured which are not present here due to Github's LFS limitation. I will provide additional links to download those: best.pt and yolov8x.pt . First is a custom trained model for license plate recognition, the other is a model for car recognition
+
+How it works in a nutshell: You provide a photo on a simple web interface, the system detects cars in the photo, and after the cars are detected it will detect their license plate. 
+To customize the sensitivity of the detection, check main.py line 66 for "conf=0.5". This is the confidence of the model detection. To further eliminate false positives, raise the number. 0.5 means 50% confidence, 0.6 is 60%, etc.
+
+After the plate is recognized , the Frontend will send the information to the Backend via /check_plate URI to see if the plate number is existent in a database which is backed by MongoDB 4.4 (Note that from MongoDB 5.x, you need to have a computer or server
+that has AVX extensions, that is why I opted for an older version of MongoDB so this software works on any hardware)
+
+If the plate is recognized, a custom command will be ran (open a garage door, remote barrier, whatever)
+
+
+2. Backend - NodeJS 20 - this is a simple program that listens on 3002 on localhost by default and it has .env file for configuration for MongoDB URI. If used with docker, you can add there the service name from docker compose , for example if service name is "mongo" then you will add as URI: mongodb://mongo:27017/gate . "gate" here being the collection. Can be any name.
+This is work in progress, it has a number of endpoints:
+
+/check_plate - verifies in mongo if the plate number is existent, and enabled: true. (can be existent or disabled)
+/log - custom endpoint to log attemtps for plate recognition.
+/admin/add_plate - add a license plate to DB 
+/admin/remove_plate - remove a license plate from DB
+/admin/toggle_plate - set a license plate to enabled/disabled
+/admin/logs - see all logs
+/admin/delete_logs - delete all logs
+/admin/create_token - create a token for accessing the backend API
+/admin/delete_token - delete a token
+
+
+3. Admin - NodeJS 20  - this is aimed to transfer the /admin endpoints from backend and move them to this module which in the future will have a simple web interface for all these /admin endpoints. Right now, here the /admin/create_token works by authenticated first with a predefined password configured in .env file, and it will use JWT to create a 1 hour valid token , added to the database, and more work to do is to actually add the token verification to all /admin endpoints.
 
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Download the models from here: https://mega.nz/#fm/MygG0TZA and add them to frontend/ folder.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Modify .env file on admin/ and backend/ for MongoDB connectivity
 
-## Add your files
+Modify docker-compose.yaml with your test domain, you will have a Traefik load balancer in front which will get Lets Encrypt SSL certificates for your microservices.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+Access URL to frontend IP port 3001 like so https://domain.configured.in.docker-compose/upload or locally without Traefik : http://ip_of_docker_host:3001/upload.
 
-```
-cd existing_repo
-git remote add origin https://gitlab-01.os.fdn-b-ro.int.masternode.ro/alpr/alpr-gate-opener.git
-git branch -M main
-git push -uf origin main
-```
+In order for this to work, all services must be up.
 
-## Integrate with your tools
+After you configure everything (docker-compose.yaml, download models to frontend, modify .env variables) run docker-compose build or docker compose build depending on your docker version. Wait for build, then run docker compose up -d
 
-- [ ] [Set up project integrations](https://gitlab-01.os.fdn-b-ro.int.masternode.ro/alpr/alpr-gate-opener/-/settings/integrations)
+# Contributing
 
-## Collaborate with your team
+This is heavily work in progress, feel free to open PRs if you want to contribute.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
 
-## Test and Deploy
+# LICENSE
+MIT License
 
-Use the built-in continuous integration in GitLab.
+## TO DO
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[] Authenticate all endpoints with generated token, including the frontend microservice needs to get a token first and then authenticate its /check_plate call with the token.
+[] Add endpoints which can delete/get a certain ID for a a single plate number or log entry.
+[] Create a simple admin interface where you can see a table of all allowed plates, all logs and have actions available as calls to endpoints: add/remove/modify number plates, add/remove/modify log entries add/remove tokens, etc.
+[] Add logic to switch the Frontend to continously monitor a webcam / monitoring camera web stream via USB or RTSP and detect cars with license plates that are approaching to check if they are allowed to have the door opened.
