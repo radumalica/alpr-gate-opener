@@ -1,6 +1,6 @@
 # alpr-gate-opener
 
-This is working in progress of a ALPR gate opener which uses (for now) a simple interface to upload a photo with the front of a car with visible license plate and recognize it.
+This is a work in progress of a ALPR gate opener which uses (for now) a simple interface to upload a photo with the front of a car with visible license plate and recognize it.
 
 This work is inspired from https://github.com/ahasera/alpr-rtsp/
 
