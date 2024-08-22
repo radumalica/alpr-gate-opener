@@ -4,9 +4,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
+import { API_ENDPOINTS } from './environment';
 
+const endpoint = process.env.NODE_ENV === 'production' ? API_ENDPOINTS.PRODUCTION : API_ENDPOINTS.DEVELOPMENT;
+axios.defaults.baseURL = `${endpoint}`;
 
-axios.defaults.baseURL = 'http://192.168.89.195:3003';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
