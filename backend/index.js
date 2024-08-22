@@ -76,61 +76,6 @@ app.post('/check_plate', async (req, res) => {
     res.json({ status });
 });
 
-// Endpoint to log plate detection attempts
-app.post('/log', async (req, res) => {
-    const { plate, datetime, status } = req.body;
-    const log = new Log({ plate, datetime, status });
-    await log.save();
-    res.json({ message: 'Logged' });
-});
-
-// Admin endpoints
-app.post('/admin/add_plate', async (req, res) => {
-    const { plate } = req.body;
-    const auth = new Auth({ plate, enabled: true });
-    await auth.save();
-    res.json({ message: 'Plate added' });
-});
-
-app.post('/admin/remove_plate', async (req, res) => {
-    const { plate } = req.body;
-    await Auth.deleteOne({ plate });
-    res.json({ message: 'Plate removed' });
-});
-
-app.post('/admin/toggle_plate', async (req, res) => {
-    const { plate } = req.body;
-    const auth = await Auth.findOne({ plate });
-    if (auth) {
-        auth.enabled = !auth.enabled;
-        await auth.save();
-    }
-    res.json({ message: 'Plate toggled' });
-});
-
-app.get('/admin/logs', async (req, res) => {
-    const logs = await Log.find().sort({ datetime: -1 });
-    res.json(logs);
-});
-
-app.post('/admin/delete_logs', async (req, res) => {
-    await Log.deleteMany({});
-    res.json({ message: 'Logs deleted' });
-});
-
-app.post('/admin/create_token', async (req, res) => {
-    const { token } = req.body;
-    const newToken = new Token({ token });
-    await newToken.save();
-    res.json({ message: 'Token created' });
-});
-
-app.post('/admin/delete_token', async (req, res) => {
-    const { token } = req.body;
-    await Token.deleteOne({ token });
-    res.json({ message: 'Token deleted' });
-});
-
 app.listen(3002, () => {
     console.log('Backend service running on port 3002');
 });

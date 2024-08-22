@@ -3,10 +3,19 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const logger = require('./utils/logger');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
+
 require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
+
+app.all('*', (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -63,9 +72,20 @@ app.post('/admin/create_token', authenticate, async (req, res) => {
     }
 });
 
-app.post('/admin/delete_token', async (req, res) => {
-    const { token } = req.body;
-    await Token.deleteOne({ token });
+app.get('/admin/get_tokens', async (req, res) => {
+    const tokens = await Token.find();
+    res.json(tokens);
+});
+
+app.get('/admin/get_token/:token', async (req, res) => {
+    const { token } = req.params;
+    const res_token = await Auth.findOne({ token });
+    res.json(res_token);
+});
+
+app.delete('/admin/delete_token/:_id', async (req, res) => {
+    const { _id } = req.params;
+    await Token.deleteOne({ _id });
     res.json({ message: 'Token deleted' });
 });
 
@@ -79,11 +99,23 @@ app.post('/admin/delete_logs', async (req, res) => {
     res.json({ message: 'Logs deleted' });
 });
 
+app.delete('/admin/delete_log/:_id', async (req, res) => {
+    const { _id } = req.params;
+    await Log.deleteOne({ _id });
+    res.json({ message: 'Log deleted' });
+});
+
 app.post('/admin/add_plate', async (req, res) => {
     const { plate } = req.body;
     const auth = new Auth({ plate, enabled: true });
     await auth.save();
     res.json({ message: 'Plate added' });
+});
+
+app.delete('/admin/remove_plate/:_id', async (req, res) => {
+    const { _id } = req.params;
+    await Auth.deleteOne({ _id });
+    res.json({ message: 'Plate removed' });
 });
 
 app.post('/admin/remove_plate', async (req, res) => {
@@ -92,7 +124,7 @@ app.post('/admin/remove_plate', async (req, res) => {
     res.json({ message: 'Plate removed' });
 });
 
-app.post('/admin/get_plates', async (req, res) => {
+app.get('/admin/get_plates', async (req, res) => {
     const plates = await Auth.find()
     res.json(plates);
 });
