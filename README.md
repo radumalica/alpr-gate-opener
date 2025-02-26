@@ -52,7 +52,7 @@ Simple ReactJS interface where you can see on the main page a form to add a plat
 
 # Getting started
 
-Download the models from here: https://mega.nz/#fm/MygG0TZA and add them to frontend/ folder.
+Download the models from here: [https://mega.nz/folder/J2QGwT7A#lHkRaXE66UYEOgZQWyy7yQ] and add them to frontend/ folder.
 
 Modify `.env` file on `admin/` and `backend/` for MongoDB connectivity
 
